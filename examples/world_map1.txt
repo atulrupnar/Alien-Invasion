@@ -1,0 +1,10 @@
+Mumbai south=Goa east=Pune north=Delhi
+Goa north=Mumbai east=Banglore south=Kochi
+Pune west=Mumbai east=Hyderabad
+Banglore west=Goa north=Hyderabad south=Chennai
+Hyderabad south=Banglore west=Pune east=Kolkata
+Delhi south=Mumbai east=Assam
+Kolkata west=Hyderabad north=Assam
+Assam south=Kolkata west=Delhi
+Kochi north=Goa east=Chennai
+Chennai west=Kochi north=Banglore

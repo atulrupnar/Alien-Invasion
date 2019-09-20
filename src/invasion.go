@@ -17,7 +17,7 @@ import (
 
 //City Represents roads connecting to cities in the format direction=>city eg. south=>Newyork
 //Alien is the Id of current alien on the city. if no alien, the value is 0.
-//Assumption : Alien id is never 0. Its always >0
+//Assumption : Alien id is never 0. Its always > 0
 type City struct {
 	roads map[string]string
 	alien int
@@ -100,7 +100,8 @@ func (inv *Invasion) DestroyCity(cityTo string, alien int) {
 	}
 
 	alien2 := inv.cityMap[cityTo].alien;
-	fmt.Printf("Sequence : %d => City %s is destroyed by %d and %d \n",inv.totalMoves, cityTo, alien, alien2);
+	fmt.Printf("Sequence : %d => City %s is destroyed by %d and %d \n",
+		inv.totalMoves, cityTo, alien, alien2);
 	logger.Printf("City %s is destroyed by %d and %d", cityTo, alien, alien2);
 	//destroy city
 	delete(inv.cityMap, cityTo);
@@ -154,9 +155,10 @@ func (inv *Invasion) DeployAliens(totalAliens int) {
 	for i := 1; i <= totalAliens; i++ {
 		cityId := rand.Intn(totalCities);
 		cityName := allCities[cityId];
-		inv.aliens[i] = cityName;
+		inv.MoveCityTo(i, "", cityName);
+		/*inv.aliens[i] = cityName;
 		inv.cityMap[cityName].alien = i;
-		logger.Println(i, " => ", cityName);
+		logger.Println(i, " => ", cityName);*/
 	}
 }
 

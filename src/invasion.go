@@ -3,7 +3,7 @@
 	It defines a functions to read a map file, build map, deploy aliens and
 	the simulation.
 */
-package main
+package invasion
 
 import (
 	"fmt"
@@ -219,9 +219,10 @@ func (inv *Invasion)WriteFile() {
 }
 
 //simulates the alien invasion.
-func main() {
+func Run(totalAliens int, mapFile string) {
 	logger.Println("INIT");
-	var data, err = ioutil.ReadFile("../examples/world_map1.txt");
+	mapDir := "../examples/";
+	var data, err = ioutil.ReadFile(mapDir + mapFile);
 	if (err != nil) {
 		fmt.Println("Error reading file");
 		logger.Println("Error reading map file", err);
@@ -235,7 +236,7 @@ func main() {
 	inv.BuildMap(string(data));
 
 	//Deploy Aliens
-	totalAliens := 4;
+	//totalAliens := 4;
 	inv.DeployAliens(totalAliens);
 
 	//Move aliens

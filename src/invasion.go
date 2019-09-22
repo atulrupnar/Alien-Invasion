@@ -13,6 +13,7 @@ import (
 	"time"
 	"os"
 	"log"
+    "regexp"
 )
 
 //City Represents roads connecting to cities in the format direction=>city eg. south=>Newyork
@@ -49,6 +50,10 @@ func init() {
 func (inv *Invasion)BuildMap(data string) {
 	logger.Println("Build Map");
 	content := strings.Split(data, "\n");
+	if isValidInput(content) == false {
+		fmt.Println("Invalid Input");
+		os.Exit(1);
+	}
 	for i:= range content {
 		//inv.parseLine(content[i]);
 		line := content[i];
@@ -68,6 +73,24 @@ func (inv *Invasion)BuildMap(data string) {
 			}
 		}
 	}
+}
+
+func isValidInput(input []string) bool {
+    dir := `(south|north|east|west)`;
+    pattern := `(?i)^\s*\w+(\s+` + dir +`=[0-9a-zA-Z]+\s*)*\s*$`
+    //match, _ := regexp.MatchString(pattern, str);
+    r, _ := regexp.Compile(pattern);
+    for i := range input {
+		line := input[i]
+		fmt.Println(line, r.MatchString(line))
+		if r.MatchString(line) == false {
+			fmt.Printf("Invalid Input in input map file at line %d \n", i);
+			fmt.Println(line)
+			fmt.Println("Correct Usage : City [Direction=City Direction=City]");
+			return false;
+		}
+    }
+    return true;
 }
 
 //GetAllCities : returns array of cities in the map(does not include destroyed cities)

@@ -49,28 +49,28 @@ func init() {
 //Build Map reads input world map file and creates internal map(cityMap)
 func (inv *Invasion)BuildMap(data string) {
 	logger.Println("Build Map");
+	//split file content to multiple lines
 	content := strings.Split(data, "\n");
 	if isValidInput(content) == false {
 		fmt.Println("Invalid Input");
 		os.Exit(1);
 	}
-	for i:= range content {
-		//inv.parseLine(content[i]);
-		line := content[i];
-		city := strings.Split(line, " ");
-		c := &City{roads : make(map[string]string),
-					 alien : 0};
-		var srcCity string
-		for i := range city {
-			if i == 0 {
-				srcCity = city[0];
-				inv.cityMap[srcCity] = c;
-			} else {
-				road := strings.Split(city[i], "=");
-				direction := road[0];
-				destCity := road[1];
-				inv.cityMap[srcCity].roads[direction] = destCity;
-			}
+	for _, line := range content {
+		//split line => City [direction=city direction=city ...]
+		lineInfo := strings.Split(line, " ");
+		srcCity := strings.TrimSpace(lineInfo[0]);
+		c := &City{
+			roads : make(map[string]string),
+			alien : 0,
+		};
+		inv.cityMap[srcCity] = c;
+		for _, dirInfo  := range lineInfo[1:] {
+			dirInfo = strings.TrimSpace(dirInfo)
+			//split => Direction=City
+			road := strings.Split(dirInfo, "=");
+			direction := strings.ToLower(road[0]);
+			destCity := road[1];
+			inv.cityMap[srcCity].roads[direction] = destCity;
 		}
 	}
 }

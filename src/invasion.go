@@ -46,6 +46,26 @@ func init() {
 	rand.Seed(time.Now().UnixNano());
 }	
 
+//function to check valid city road entries
+//city roads are bidirectional. It checks for when road from city A to B exists, 
+//road B to A must exist
+func isValidRoads(cityMap map[string]*City) bool {
+	//loop through citmap
+	for cityFrom, val := range cityMap {
+		//loop through roads
+		for dir, cityTo := range val.roads {
+			oppositeDir := OppositeDirection(dir);
+			//Check for city on opposite direction
+			//ex. if CityA south=CityB, Then CityB north=CityA 
+			if cityFrom != cityMap[cityTo].roads[oppositeDir] {
+				fmt.Println("Invalid map entry : check roads for following cities => ", cityFrom, cityTo);
+				return false;
+			}
+		}
+	}
+	return true
+}
+
 //Build Map reads input world map file and creates internal map(cityMap)
 func (inv *Invasion)BuildMap(data string) {
 	logger.Println("Build Map");
@@ -58,20 +78,56 @@ func (inv *Invasion)BuildMap(data string) {
 	for _, line := range content {
 		//split line => City [direction=city direction=city ...]
 		lineInfo := strings.Split(line, " ");
-		srcCity := strings.TrimSpace(lineInfo[0]);
+		srcCity := strings.TrimSpace(lineInfo[0])
+
+		//Check for duplicate city on map
+		if _, isCityExists := inv.cityMap[srcCity]; isCityExists {
+			fmt.Println("Duplicate city found, City can not be redefined");
+			os.Exit(1);
+		}
+
 		c := &City{
 			roads : make(map[string]string),
 			alien : 0,
 		};
 		inv.cityMap[srcCity] = c;
+
+		//cache to store destination cities for each city(to identify invalid entry)
+		cityCache := make(map[string]bool);
+
+		//loop through all the roads of city and stores info in cityMap
 		for _, dirInfo  := range lineInfo[1:] {
 			dirInfo = strings.TrimSpace(dirInfo)
 			//split => Direction=City
 			road := strings.Split(dirInfo, "=");
 			direction := strings.ToLower(road[0]);
+
+			//Check for duplicate road on same direction.
+			//ex. south=Mumbai south=Delhi is invalid
+			if _, isRoadExists := inv.cityMap[srcCity].roads[direction]; isRoadExists {
+				fmt.Println("Duplicate road found, road can not be redefined");
+				os.Exit(1);
+			}
+
 			destCity := road[1];
+			if destCity == srcCity {
+				fmt.Println("A city can not have road to itself");
+				os.Exit(1);
+			}
+
+			//Check for duplicate destination city. 
+			//ex. south=Mumbai north=Mumbai is invalid
+			if _, isCityToExists := cityCache[destCity]; isCityToExists {
+				fmt.Println(`Duplicate destination city found, two roads
+					from same city can not have same destination city`);
+				os.Exit(1);
+			}
+			cityCache[destCity] = true;
 			inv.cityMap[srcCity].roads[direction] = destCity;
 		}
+	}
+	if !isValidRoads(inv.cityMap) {
+		os.Exit(1);
 	}
 }
 
@@ -204,7 +260,7 @@ func (inv *Invasion)IsSimulationOver() bool {
 
 //Move aliens : Move aliens iteratively to random connected city
 func (inv *Invasion) MoveAliens() {
-	logger.Println("----> moveAliens : ", inv.totalMoves);
+	//logger.Println("----> moveAliens : ", inv.totalMoves);
 	var roads map[string]string;
 	for alien, city := range inv.aliens {
 		roads = inv.cityMap[city].roads;

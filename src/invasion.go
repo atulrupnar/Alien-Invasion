@@ -314,22 +314,25 @@ func (inv *Invasion)WriteFile() {
     }
 }
 
+func ReadFile(mapFile string) string {
+	var data, err = ioutil.ReadFile(mapFile);
+	if (err != nil) {
+		log.Fatal(err);
+		logger.Println("Error reading map file", err);
+	}
+	return string(data);
+}
+
 //simulates the alien invasion.
 func Run(totalAliens int, mapFile string) {
 	logger.Println("INIT");
 	mapDir := "./examples/";
-	var data, err = ioutil.ReadFile(mapDir + mapFile);
-	if (err != nil) {
-		fmt.Println("Error reading file");
-		logger.Println("Error reading map file", err);
-	}
+	data := ReadFile(mapDir + mapFile);
 	inv := New();
-	//inv.cityMap = make(map[string]*City)
 	//BUILD MAP
-	inv.BuildMap(string(data));
+	inv.BuildMap(data);
 
 	//Deploy Aliens
-	//totalAliens := 4;
 	inv.DeployAliens(totalAliens);
 
 	//Move aliens

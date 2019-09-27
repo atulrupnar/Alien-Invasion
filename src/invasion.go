@@ -58,7 +58,7 @@ func New() *Invasion {
 //function to check valid city road entries
 //city roads are bidirectional. It checks for when road from city A to B exists, 
 //road B to A must exist
-func isValidRoads(cityMap map[string]*City) error {
+func IsValidRoads(cityMap map[string]*City) error {
 	//loop through citmap
 	for cityFrom, val := range cityMap {
 		//loop through roads
@@ -138,7 +138,7 @@ func (inv *Invasion)BuildMap(data string) {
 	logger.Println("Build Map");
 	//split file content to multiple lines
 	content := strings.Split(data, "\n");
-	if err := isValidInput(content); err != nil {
+	if err := IsValidInput(content); err != nil {
 		logger.Println("error : Invalid Input", err.Error());
 		log.Fatal(err.Error());
 	}
@@ -147,12 +147,12 @@ func (inv *Invasion)BuildMap(data string) {
 			log.Fatal(err.Error());
 		}
 	}
-	if err := isValidRoads(inv.cityMap); err != nil {
+	if err := IsValidRoads(inv.cityMap); err != nil {
 		log.Fatal(err.Error());
 	}
 }
 
-func isValidInput(input []string) error {
+func IsValidInput(input []string) error {
     dir := `(south|north|east|west)`;
     pattern := `(?i)^\s*\w+(\s+` + dir +`=[0-9a-zA-Z]+\s*)*\s*$`
     //match, _ := regexp.MatchString(pattern, str);

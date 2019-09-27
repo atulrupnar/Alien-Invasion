@@ -269,6 +269,11 @@ func (inv *Invasion) MoveAliens() {
 	for alien, city := range inv.aliens {
 		roads = inv.cityMap[city].roads;
 		if (len(roads) == 0) {
+			//City is island
+			//Alien is trapped and destroyed itself
+			delete(inv.aliens, alien);
+			fmt.Printf("Alien %d is trapped on %s island and destroyed himself\n", alien, city);
+			logger.Printf("Alien %d is trapped on %s island and destroyed himself\n", alien, city);
 			continue;
 		}
 		dir := GetRandomKey(roads);

@@ -54,6 +54,10 @@ func isValidRoads(cityMap map[string]*City) bool {
 	for cityFrom, val := range cityMap {
 		//loop through roads
 		for dir, cityTo := range val.roads {
+			if _, isCityExists := cityMap[cityTo]; !isCityExists {
+				fmt.Printf("Incomplete Map : City %s is not defined\n", cityTo);
+				os.Exit(1);
+			}
 			oppositeDir := OppositeDirection(dir);
 			//Check for city on opposite direction
 			//ex. if CityA south=CityB, Then CityB north=CityA 

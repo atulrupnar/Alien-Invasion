@@ -46,6 +46,14 @@ func init() {
 	rand.Seed(time.Now().UnixNano());
 }	
 
+func New() *Invasion {
+	return	&Invasion{
+		aliens : make(map[int]string),
+		cityMap : make(map[string]*City),
+		totalMoves : 0,
+	};
+}
+
 //function to check valid city road entries
 //city roads are bidirectional. It checks for when road from city A to B exists, 
 //road B to A must exist
@@ -315,11 +323,8 @@ func Run(totalAliens int, mapFile string) {
 		fmt.Println("Error reading file");
 		logger.Println("Error reading map file", err);
 	}
-	inv := Invasion{
-				aliens : make(map[int]string),
-				totalMoves : 0,
-			};
-	inv.cityMap = make(map[string]*City)
+	inv := New();
+	//inv.cityMap = make(map[string]*City)
 	//BUILD MAP
 	inv.BuildMap(string(data));
 

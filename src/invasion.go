@@ -79,8 +79,62 @@ func isValidRoads(cityMap map[string]*City) error {
 	return nil;
 }
 
+//Parseline function parses a line and build internal data structure
+func (inv *Invasion)ParseLine(line string) error {
+	//split line => City [direction=city direction=city ...]
+	lineInfo := strings.Split(line, " ");
+	srcCity := strings.TrimSpace(lineInfo[0])
+
+	//Check for duplicate city on map
+	if _, isCityExists := inv.cityMap[srcCity]; isCityExists {
+		logger.Println("error : Duplicate city found, City can not be redefined", srcCity);
+		return errors.New(fmt.Sprintf("error : Duplicate city found, City can not be redefined : %s", srcCity));
+	}
+
+	c := &City{
+		roads : make(map[string]string),
+		alien : 0,
+	};
+	inv.cityMap[srcCity] = c;
+
+	//cache to store destination cities for each city(to identify invalid entry)
+	cityCache := make(map[string]bool);
+	//loop through all the roads of city and stores info in cityMap
+	for _, dirInfo  := range lineInfo[1:] {
+		dirInfo = strings.TrimSpace(dirInfo)
+		//split => Direction=City
+		road := strings.Split(dirInfo, "=");
+		direction := strings.ToLower(road[0]);
+
+		//Check for duplicate road on same direction.
+		//ex. south=Mumbai south=Delhi is invalid
+		if _, isRoadExists := inv.cityMap[srcCity].roads[direction]; isRoadExists {
+			logger.Println("error : Duplicate road found, road can not be redefined %s", lineInfo[1:]);
+			return errors.New(fmt.Sprintf("error : Duplicate road found, road can not be redefined : %s", lineInfo[1:]));
+		}
+
+		destCity := road[1];
+		if destCity == srcCity {
+			logger.Println("error : A city can not have road to itself", srcCity);
+			return errors.New(fmt.Sprintf("error : A city can not have road to itself. Check for %s city", srcCity));
+		}
+
+		//Check for duplicate destination city. 
+		//ex. south=Mumbai north=Mumbai is invalid
+		if _, isCityToExists := cityCache[destCity]; isCityToExists {
+			logger.Println(`error : Duplicate destination city found, two roads
+				from same city can not have same destination city`, lineInfo[1:]);
+			return errors.New(fmt.Sprintf(`error : Two roads from same source can not same destination : %s`, lineInfo[1:]));
+
+		}
+		cityCache[destCity] = true;
+		inv.cityMap[srcCity].roads[direction] = destCity;
+	}
+	return nil;
+}
+
 //Build Map reads input world map file and creates internal map(cityMap)
-func (inv *Invasion)BuildMap(data string) error {
+func (inv *Invasion)BuildMap(data string) {
 	logger.Println("Build Map");
 	//split file content to multiple lines
 	content := strings.Split(data, "\n");
@@ -89,55 +143,8 @@ func (inv *Invasion)BuildMap(data string) error {
 		log.Fatal(err.Error());
 	}
 	for _, line := range content {
-		//split line => City [direction=city direction=city ...]
-		lineInfo := strings.Split(line, " ");
-		srcCity := strings.TrimSpace(lineInfo[0])
-
-		//Check for duplicate city on map
-		if _, isCityExists := inv.cityMap[srcCity]; isCityExists {
-			logger.Println("error : Duplicate city found, City can not be redefined", srcCity);
-			log.Fatalf("error : Duplicate city found, City can not be redefined : %s", srcCity);
-		}
-
-		c := &City{
-			roads : make(map[string]string),
-			alien : 0,
-		};
-		inv.cityMap[srcCity] = c;
-
-		//cache to store destination cities for each city(to identify invalid entry)
-		cityCache := make(map[string]bool);
-
-		//loop through all the roads of city and stores info in cityMap
-		for _, dirInfo  := range lineInfo[1:] {
-			dirInfo = strings.TrimSpace(dirInfo)
-			//split => Direction=City
-			road := strings.Split(dirInfo, "=");
-			direction := strings.ToLower(road[0]);
-
-			//Check for duplicate road on same direction.
-			//ex. south=Mumbai south=Delhi is invalid
-			if _, isRoadExists := inv.cityMap[srcCity].roads[direction]; isRoadExists {
-				logger.Println("error : Duplicate road found, road can not be redefined %s", lineInfo[1:]);
-				log.Fatalf("error : Duplicate road found, road can not be redefined : %s", lineInfo[1:]);
-			}
-
-			destCity := road[1];
-			if destCity == srcCity {
-				logger.Println("error : A city can not have road to itself", srcCity);
-				log.Fatalf("error : A city can not have road to itself. Check for %s city", srcCity);
-			}
-
-			//Check for duplicate destination city. 
-			//ex. south=Mumbai north=Mumbai is invalid
-			if _, isCityToExists := cityCache[destCity]; isCityToExists {
-				logger.Println(`error : Duplicate destination city found, two roads
-					from same city can not have same destination city`, lineInfo[1:]);
-				log.Fatalf(`error : Two roads from same source can not same destination : %s`, lineInfo[1:]);
-
-			}
-			cityCache[destCity] = true;
-			inv.cityMap[srcCity].roads[direction] = destCity;
+		if err := inv.ParseLine(line); err != nil {
+			log.Fatal(err.Error());
 		}
 	}
 	if err := isValidRoads(inv.cityMap); err != nil {

@@ -14,6 +14,7 @@ import (
 	"os"
 	"log"
     "regexp"
+    "errors"
 )
 
 //City Represents roads connecting to cities in the format direction=>city eg. south=>Newyork
@@ -57,35 +58,35 @@ func New() *Invasion {
 //function to check valid city road entries
 //city roads are bidirectional. It checks for when road from city A to B exists, 
 //road B to A must exist
-func isValidRoads(cityMap map[string]*City) bool {
+func isValidRoads(cityMap map[string]*City) error {
 	//loop through citmap
 	for cityFrom, val := range cityMap {
 		//loop through roads
 		for dir, cityTo := range val.roads {
 			if _, isCityExists := cityMap[cityTo]; !isCityExists {
-				fmt.Printf("Incomplete Map : City %s is not defined\n", cityTo);
-				os.Exit(1);
+				logger.Printf("error : Incomplete Map : City %s is not defined\n", cityTo);
+				return errors.New(fmt.Sprintf("error : Incomplete Map : City %s is not defined", cityTo));
 			}
 			oppositeDir := OppositeDirection(dir);
 			//Check for city on opposite direction
 			//ex. if CityA south=CityB, Then CityB north=CityA 
 			if cityFrom != cityMap[cityTo].roads[oppositeDir] {
-				fmt.Println("Invalid map entry : check roads for following cities => ", cityFrom, cityTo);
-				return false;
+				logger.Println("error : Invalid map entry : check roads for following cities => ", cityFrom, cityTo);
+				return errors.New(fmt.Sprintf("error : Invalid map entry : check roads for %s and %s", cityFrom, cityTo));
 			}
 		}
 	}
-	return true
+	return nil;
 }
 
 //Build Map reads input world map file and creates internal map(cityMap)
-func (inv *Invasion)BuildMap(data string) {
+func (inv *Invasion)BuildMap(data string) error {
 	logger.Println("Build Map");
 	//split file content to multiple lines
 	content := strings.Split(data, "\n");
-	if isValidInput(content) == false {
-		fmt.Println("Invalid Input");
-		os.Exit(1);
+	if err := isValidInput(content); err != nil {
+		logger.Println("error : Invalid Input", err.Error());
+		log.Fatal(err.Error());
 	}
 	for _, line := range content {
 		//split line => City [direction=city direction=city ...]
@@ -94,8 +95,8 @@ func (inv *Invasion)BuildMap(data string) {
 
 		//Check for duplicate city on map
 		if _, isCityExists := inv.cityMap[srcCity]; isCityExists {
-			fmt.Println("Duplicate city found, City can not be redefined");
-			os.Exit(1);
+			logger.Println("error : Duplicate city found, City can not be redefined", srcCity);
+			log.Fatalf("error : Duplicate city found, City can not be redefined : %s", srcCity);
 		}
 
 		c := &City{
@@ -117,48 +118,47 @@ func (inv *Invasion)BuildMap(data string) {
 			//Check for duplicate road on same direction.
 			//ex. south=Mumbai south=Delhi is invalid
 			if _, isRoadExists := inv.cityMap[srcCity].roads[direction]; isRoadExists {
-				fmt.Println("Duplicate road found, road can not be redefined");
-				os.Exit(1);
+				logger.Println("error : Duplicate road found, road can not be redefined %s", lineInfo[1:]);
+				log.Fatalf("error : Duplicate road found, road can not be redefined : %s", lineInfo[1:]);
 			}
 
 			destCity := road[1];
 			if destCity == srcCity {
-				fmt.Println("A city can not have road to itself");
-				os.Exit(1);
+				logger.Println("error : A city can not have road to itself", srcCity);
+				log.Fatalf("error : A city can not have road to itself. Check for %s city", srcCity);
 			}
 
 			//Check for duplicate destination city. 
 			//ex. south=Mumbai north=Mumbai is invalid
 			if _, isCityToExists := cityCache[destCity]; isCityToExists {
-				fmt.Println(`Duplicate destination city found, two roads
-					from same city can not have same destination city`);
-				os.Exit(1);
+				logger.Println(`error : Duplicate destination city found, two roads
+					from same city can not have same destination city`, lineInfo[1:]);
+				log.Fatalf(`error : Two roads from same source can not same destination : %s`, lineInfo[1:]);
+
 			}
 			cityCache[destCity] = true;
 			inv.cityMap[srcCity].roads[direction] = destCity;
 		}
 	}
-	if !isValidRoads(inv.cityMap) {
-		os.Exit(1);
+	if err := isValidRoads(inv.cityMap); err != nil {
+		log.Fatal(err.Error());
 	}
 }
 
-func isValidInput(input []string) bool {
+func isValidInput(input []string) error {
     dir := `(south|north|east|west)`;
     pattern := `(?i)^\s*\w+(\s+` + dir +`=[0-9a-zA-Z]+\s*)*\s*$`
     //match, _ := regexp.MatchString(pattern, str);
     r, _ := regexp.Compile(pattern);
     for i := range input {
 		line := input[i]
-		fmt.Println(line, r.MatchString(line))
 		if r.MatchString(line) == false {
-			fmt.Printf("Invalid Input in input map file at line %d \n", i);
-			fmt.Println(line)
-			fmt.Println("Correct Usage : City [Direction=City Direction=City]");
-			return false;
+			logger.Println("error : Invalid entry in map file at line", i, line);
+			return errors.New(fmt.Sprintf(`error : Invalid entry in map file at line %d :
+			%s Correct Usage : City [Direction=City Direction=City]`, i, line));
 		}
     }
-    return true;
+    return nil;
 }
 
 //GetAllCities : returns array of cities in the map(does not include destroyed cities)
@@ -191,8 +191,14 @@ func (inv *Invasion) DestroyCity(cityTo string, alien int) {
 	}
 
 	alien2 := inv.cityMap[cityTo].alien;
-	fmt.Printf("Sequence : %d => City %s is destroyed by %d and %d \n",
-		inv.totalMoves, cityTo, alien, alien2);
+	if inv.totalMoves == 0 {		
+		fmt.Printf("Deploy : => ");
+	} else {
+		fmt.Printf("Move %d : => ", inv.totalMoves);
+	}
+
+	fmt.Printf("City %s is destroyed by %d and %d \n",
+		cityTo, alien, alien2);
 	logger.Printf("City %s is destroyed by %d and %d", cityTo, alien, alien2);
 	//destroy city
 	delete(inv.cityMap, cityTo);
@@ -304,12 +310,14 @@ func (inv *Invasion)WriteFile() {
 
     //f, err := os.OpenFile("myfile.data", os.O_APPEND|os.O_WRONLY, 0600)
     f, err := os.Create("./examples/output.txt")
+    defer f.Close()
     if err != nil {
+    	logger.Println("Error opening output file", err);
         panic(err)
     }
-    defer f.Close()
 
     if _, err = f.WriteString(output); err != nil {
+    	logger.Println("Error writing to output file", err);
         panic(err)
     }
 }

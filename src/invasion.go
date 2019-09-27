@@ -37,7 +37,7 @@ type Invasion struct {
 // Defines Global variables for logging information
 var (
 	MaxMovesAllowed = 10
-	f, _ = os.OpenFile("../logs/invasion_logs.txt", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	f, _ = os.OpenFile("./logs/invasion_logs.txt", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	logger = log.New(f, "", log.LstdFlags)
 )
 
@@ -295,7 +295,7 @@ func (inv *Invasion)WriteFile() {
 	}
 
     //f, err := os.OpenFile("myfile.data", os.O_APPEND|os.O_WRONLY, 0600)
-    f, err := os.Create("../examples/output.txt")
+    f, err := os.Create("./examples/output.txt")
     if err != nil {
         panic(err)
     }
@@ -309,7 +309,7 @@ func (inv *Invasion)WriteFile() {
 //simulates the alien invasion.
 func Run(totalAliens int, mapFile string) {
 	logger.Println("INIT");
-	mapDir := "../examples/";
+	mapDir := "./examples/";
 	var data, err = ioutil.ReadFile(mapDir + mapFile);
 	if (err != nil) {
 		fmt.Println("Error reading file");

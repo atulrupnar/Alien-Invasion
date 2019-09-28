@@ -55,6 +55,18 @@ func New() *Invasion {
 	};
 }
 
+func (inv *Invasion)GetCityMap() map[string]*City {
+	return inv.cityMap;	
+}
+
+func  (inv *Invasion)GetAliens() map[int]string {
+	return inv.aliens;
+}
+
+func  (inv *Invasion)GetTotalMoves() int {
+	return inv.totalMoves;
+}
+
 func  (inv *Invasion)IsCity(city string) bool {
 	if _, ok := inv.cityMap[city]; !ok {
 		return false;

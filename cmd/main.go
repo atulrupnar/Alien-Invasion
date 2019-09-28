@@ -15,9 +15,10 @@ func main() {
 		flag.PrintDefaults();
 	}
 
-	mapFile := flag.String("map", "world_map1.txt", "map file path")
+	mapFile := flag.String("map", "./examples/world_map1.txt", "map file path")
 	numAliens := flag.Int("aliens", 0, "number of aliens to be deployed")
 	//logFile := flag.String("log", "logs/log.txt", "log file path");
+	outFile := flag.String("out", "./examples/output.txt", "output file path")
 
 	flag.Parse()
 	if *numAliens == 0 {
@@ -26,5 +27,6 @@ func main() {
 		os.Exit(1)
 	}
 	//call to simulation function
-	invasion.Run(*numAliens, *mapFile);
+	inv := invasion.New();
+	inv.Run(*numAliens, *mapFile, *outFile);
 }

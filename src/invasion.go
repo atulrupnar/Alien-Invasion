@@ -345,7 +345,7 @@ func (inv *Invasion) MoveAliens() {
 
 //Write file : converts internal map to raw input 
 //format and writes to output file
-func (inv *Invasion)WriteFile() {
+func (inv *Invasion)WriteFile(outFile string) {
 	var output = "";
 	for k, v := range inv.cityMap {
 		output += k + " ";
@@ -356,7 +356,7 @@ func (inv *Invasion)WriteFile() {
 	}
 
     //f, err := os.OpenFile("myfile.data", os.O_APPEND|os.O_WRONLY, 0600)
-    f, err := os.Create("./examples/output.txt")
+    f, err := os.Create(outFile)
     defer f.Close()
     if err != nil {
     	logger.Println("Error opening output file", err);
@@ -379,11 +379,9 @@ func ReadFile(mapFile string) string {
 }
 
 //simulates the alien invasion.
-func Run(totalAliens int, mapFile string) {
+func (inv *Invasion)Run(totalAliens int, mapFile string, outFile string) {
 	logger.Println("INIT");
-	mapDir := "./examples/";
-	data := ReadFile(mapDir + mapFile);
-	inv := New();
+	data := ReadFile(mapFile);
 	//BUILD MAP
 	inv.BuildMap(data);
 
@@ -400,5 +398,5 @@ func Run(totalAliens int, mapFile string) {
 		}
 		inv.MoveAliens();
 	}
-	inv.WriteFile();
+	inv.WriteFile(outFile);
 }

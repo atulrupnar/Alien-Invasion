@@ -55,6 +55,26 @@ func New() *Invasion {
 	};
 }
 
+func  (inv *Invasion)IsCity(city string) bool {
+	if _, ok := inv.cityMap[city]; !ok {
+		return false;
+	}
+	return true;
+}
+
+func  (inv *Invasion)IsConnected(cityA, cityB string) bool {
+	if !inv.IsCity(cityA) {
+		return false;
+	}
+	roads := inv.cityMap[cityA].roads;
+	for _, cityTo := range roads {
+		if cityTo == cityB {
+			return true;
+		}
+	}
+	return false;
+}
+
 //function to check valid city road entries
 //city roads are bidirectional. It checks for when road from city A to B exists, 
 //road B to A must exist
@@ -215,16 +235,23 @@ func (inv *Invasion) DestroyCity(cityTo string, alien int) {
 }
 
 //Move Alien : Moves aliens iteratively to random connected city from current city
-func (inv *Invasion) MoveCityTo(alien int, cityFrom string, cityTo string) {
+func (inv *Invasion) MoveCityTo(alien int, cityFrom string, cityTo string) bool {
 	logger.Printf("Move alien %d from %s to %s \n", alien, cityFrom, cityTo);
 	if cityFrom != "" {
 		inv.cityMap[cityFrom].alien = 0
 	}
+
 	//check if cityTo exists
 	if _, ok := inv.cityMap[cityTo]; ok == false  {
 		logger.Println("cityTo does not exists", cityTo)
-		return;
+		return false;
 	}
+
+	if cityFrom != "" && !inv.IsConnected(cityFrom, cityTo) {
+		logger.Printf("Can not move alien! City %s and %s are not connected", cityFrom, cityTo);
+		return false;
+	}
+
 	if (inv.cityMap[cityTo].alien == 0) {
 		inv.aliens[alien] = cityTo;
 		inv.cityMap[cityTo].alien = alien
@@ -232,6 +259,7 @@ func (inv *Invasion) MoveCityTo(alien int, cityFrom string, cityTo string) {
 	} else {
 		inv.DestroyCity(cityTo, alien);
 	}
+	return true;
 }
 
 //Get Random Key : get random key out of keys from map object

@@ -37,7 +37,7 @@ type Invasion struct {
 
 // Defines Global variables for logging information
 var (
-	MaxMovesAllowed = 10
+	MaxMovesAllowed = 10000;
 	f, _ = os.OpenFile("./logs/invasion_logs.txt", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	logger = log.New(f, "", log.LstdFlags)
 )

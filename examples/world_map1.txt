@@ -1,10 +1,20 @@
-Mumbai south=Goa east=Pune north=Delhi
-Goa north=Mumbai east=Banglore south=Kochi
+Mumbai south=Goa east=Pune north=Delhi west=Germany
+Goa north=Mumbai east=Banglore south=Kochi west=Dubai
 Pune west=Mumbai east=Hyderabad
 Banglore west=Goa north=Hyderabad south=Chennai
 Hyderabad south=Banglore west=Pune east=Kolkata
-Delhi south=Mumbai east=Assam
-Kolkata west=Hyderabad north=Assam
+Delhi south=Mumbai east=Assam west=Karachi north=Nepal
+Kolkata west=Hyderabad north=Assam east=Bangkok
 Assam south=Kolkata west=Delhi
 Kochi north=Goa east=Chennai
 Chennai west=Kochi north=Banglore
+France east=Dubai north=Germany
+Dubai west=France east=Goa north=Karachi
+Germany south=France east=Mumbai north=Ukrain
+Ukrain south=Germany east=Russia
+Karachi south=Dubai east=Delhi
+Russia west=Ukrain south=Nepal
+Nepal north=Russia south=Delhi east=China
+China west=Nepal south=HongKong
+HongKong north=China south=Bangkok
+Bangkok north=HongKong west=Kolkata

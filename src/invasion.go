@@ -174,7 +174,10 @@ func (inv *Invasion)BuildMap(data string) {
 		logger.Println("error : Invalid Input", err.Error());
 		log.Fatal(err.Error());
 	}
+	//regex to remove extra spaces in input string
+	space := regexp.MustCompile(`\s+`);
 	for _, line := range content {
+		line = space.ReplaceAllString(line, " ");
 		if err := inv.ParseLine(line); err != nil {
 			log.Fatal(err.Error());
 		}
